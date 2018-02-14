@@ -1,0 +1,134 @@
+<html>
+<body style="margin:0px;">
+
+<!-- <script src="../lib/three.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/89/three.js"></script>
+
+<script src="../lib/jquery.min.js"></script>
+<script src="../lib/underscore.js"></script>
+<script src="../lib/TrackballControls.js"></script>
+<script src="../lib/ShaderLoader.js"></script>
+
+<script src="../PhysicsRenderer.js"></script>
+
+
+<script>
+
+
+  var scene , camera , renderer, clock , controls;
+  /************************************************************
+   @ SIZE
+   * size of the texture,
+   * suggest set this to 2's power of X.(512,1024..etc).
+   *
+   * limitation: 8192 or 4096
+   *
+  ************************************************************/
+  var SIZE = 1024;
+  var simulation;
+
+  var simulationUniforms = {
+    dT:        { type:"f" , value: 0 },
+    noiseSize: { type:"f" , value: .1 }
+  }
+
+  //texture that generate by three.js geo
+  var renderUniforms = {
+    t_pos:{ type:"v2" , value: null }
+  }
+  console.log(`simulation unif: `, simulationUniforms);
+  console.log(`render unif: `    , renderUniforms    );
+
+  //load shader
+  var shaders = new ShaderLoader( './shaders' );
+  shaders.load( 'ss-curl'    , 'sim'    , 'simulation' );
+  shaders.load( 'vs-lookup'  , 'lookup' , 'vertex'     );
+  shaders.load( 'fs-lookup'  , 'lookup' , 'fragment'   );
+  shaders.shaderSetLoaded = function(){
+    init();
+    animate();
+  }
+
+
+
+  function init(){
+
+      /************************************************************
+         Default threejs stuff!
+      ************************************************************/
+      scene = new THREE.Scene();
+      //aspect ratio
+      var ar = window.innerWidth / window.innerHeight;
+      camera = new THREE.PerspectiveCamera( 75, ar , 1, 100000 );
+      camera.position.z = 100;
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      document.body.appendChild( renderer.domElement );
+      controls = new THREE.TrackballControls( camera );
+      clock = new THREE.Clock();
+
+      /************************************************************
+         magics
+      ************************************************************/
+      simulation = new PhysicsRenderer( SIZE , shaders.ss.sim , renderer );
+      simulation.setUniforms( simulationUniforms );
+      simulation.addBoundTexture( renderUniforms.t_pos , 'output' );
+      simulation.resetRand( 5 );
+      /************************************************************
+       @ geo, mat => particles
+       * geometry that matches pixel "index",
+       * of texture (xy coord of each pixel)
+       *
+       * mat: lookup shader
+       *
+      ************************************************************/
+      var geo = createLookupGeometry( SIZE );
+      var mat = new THREE.ShaderMaterial({
+        uniforms: renderUniforms,
+        vertexShader: shaders.vs.lookup,
+        fragmentShader: shaders.fs.lookup,
+      });
+      var particles = new THREE.Points( geo , mat );
+      particles.frustumCulled = false;
+      scene.add( particles );
+
+
+      var axesHelper = new THREE.AxesHelper( 5 );
+      scene.add( axesHelper );
+  }
+
+  function animate(){
+
+    requestAnimationFrame( animate );
+
+    simulationUniforms.dT.value = clock.getDelta();
+    simulation.update();
+    // simulation.addDebugScene(scene)
+
+    controls.update();
+    renderer.render( scene , camera );
+
+  }
+
+  //produce pixel "index"
+  function createLookupGeometry( size ){
+    var geo = new THREE.BufferGeometry();
+    var positions = new Float32Array(  size * size * 3 );
+
+    for ( var i = 0, j = 0, l = positions.length / 3; i < l; i ++, j += 3 ) {
+      positions[ j     ] = ( i % size ) / size;
+      // console.log("i="+i);
+      // console.log(i%size);
+      // console.log("previousJ"+' '+positions[j]);
+      positions[ j + 1 ] = Math.floor( i / size ) / size;
+      // console.log("nextJ"+' ' +positions[j+1]);
+    }
+    geo.addAttribute( 'position', new THREE.BufferAttribute( positions , 3 ) );
+    return geo;
+  }
+
+
+</script>
+
+</body>
+</html>
