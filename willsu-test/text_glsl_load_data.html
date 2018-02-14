@@ -29,21 +29,15 @@
   var SIZE = 1024; //also length of data array(data of refugee).
   var simulation;
 
-  var simulationUniforms = {
-    dT:        { type:"f" , value: 0 },
-    centerPos: { type:"v3" , value: new THREE.Vector3() }
-  }
 
-  //texture that generate by three.js geo
   var renderUniforms = {
     t_pos:{ type:"v2" , value: new THREE.Vector2() }
   }
-  console.log(`simulation unif: `, simulationUniforms);
   console.log(`render unif: `    , renderUniforms    );
 
   //load shader
   var shaders = new ShaderLoader( './shaders' );
-  shaders.load( 'gravity_simple'    , 'sim'    , 'simulation' );
+  shaders.load( 'data_fly'   , 'sim'    , 'simulation' );
   shaders.load( 'vs-lookup'  , 'lookup' , 'vertex'     );
   shaders.load( 'fs-lookup'  , 'lookup' , 'fragment'   );
   shaders.shaderSetLoaded = function(){
@@ -80,7 +74,6 @@
          magics
       ************************************************************/
       simulation = new PhysicsRenderer( SIZE , shaders.ss.sim , renderer );
-      // simulation.setUniforms( simulationUniforms );
       simulation.addBoundTexture( renderUniforms.t_pos , 'output' );
       // simulation.resetRand( 200 );
       simulation.resetData(50, data)
@@ -103,7 +96,7 @@
       scene.add( particles );
 
 
-      var axesHelper = new THREE.AxesHelper( 5 );
+      var axesHelper = new THREE.AxesHelper( 80 );
       scene.add( axesHelper );
   }
 
@@ -111,9 +104,8 @@
 
     requestAnimationFrame( animate );
 
-    // simulationUniforms.dT.value = clock.getDelta();
     simulation.update();
-    simulation.addDebugScene(scene)
+    // simulation.addDebugScene(scene)
 
     controls.update();
     renderer.render( scene , camera );

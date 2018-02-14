@@ -23,6 +23,7 @@ function PhysicsRenderer( size , shader , renderer ){
   });
   this.rt_2 = this.rt_1.clone();
   this.rt_3 = this.rt_1.clone();
+  this.rt_4 = this.rt_1.clone();
 
   this.counter = 0;
 
@@ -110,6 +111,12 @@ PhysicsRenderer.prototype.createDebugScene= function(){
   debugMesh.position.set( 105, 0 , 0 );
   debugScene.add( debugMesh );
 
+  var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
+    map: this.rt_4
+  }));
+  debugMesh.position.set( 215, 0 , 0 );
+  debugScene.add( debugMesh );
+
   return debugScene;
 
 }
@@ -193,8 +200,6 @@ PhysicsRenderer.prototype.update = function(){
 
     this.pass( this.simulation, this.rt_3 );
 
-    // this.ooOutput = this.rt_1;
-    // this.oOutput = this.rt_2;
     this.output = this.rt_3;
 
   }
@@ -205,8 +210,6 @@ PhysicsRenderer.prototype.update = function(){
 
     this.pass( this.simulation , this.rt_1 );
 
-    // this.ooOutput = this.rt_2;
-    // this.oOutput = this.rt_3;
     this.output = this.rt_1;
 
 
@@ -217,8 +220,6 @@ PhysicsRenderer.prototype.update = function(){
 
     this.pass( this.simulation , this.rt_2 );
 
-    // this.ooOutput = this.rt_3;
-    // this.oOutput = this.rt_1;
     this.output = this.rt_2;
 
   }
@@ -268,15 +269,17 @@ PhysicsRenderer.prototype.setUniform = function( name , u ){
 }
 
 // resets the render targets to the from position
-PhysicsRenderer.prototype.reset = function( texture ){
+PhysicsRenderer.prototype.reset = function( texture , destiny_texture){
   //** main texture that created from resetRand.(random num generate from the loop)
-  this.texture = texture;
+  // this.texture = texture;
   this.texturePassProgram.uniforms.texture.value = texture;
 
   this.pass( this.texturePassProgram , this.rt_1 );
   this.pass( this.texturePassProgram , this.rt_2 );
   this.pass( this.texturePassProgram , this.rt_3 );
 
+  this.texturePassProgram.uniforms.texture.value = destiny_texture;
+  this.pass( this.texturePassProgram , this.rt_4 );
 }
 // resets the render targets to the from position(random)
 PhysicsRenderer.prototype.resetRand = function( size , alpha ){
@@ -295,7 +298,7 @@ PhysicsRenderer.prototype.resetRand = function( size , alpha ){
 
   }
 
-// console.log(data);
+
   var texture = new THREE.DataTexture(
     data,
     this.size,
@@ -318,11 +321,11 @@ PhysicsRenderer.prototype.resetData = function(s, d){
   var size = s;
   var data_format = new Float32Array( this.s2 * 4 );
 
-  for (var i = 0; i < data_format.length / 4 ; i+=4 ) {
+  for (var i = 0, j =0; j < data_format.length / 4 ; i+=4, j++ ) {
 
-    data_format[i]     = d[i].x * size;
-    data_format[i + 1] = d[i].y * size;
-    data_format[i + 2] = d[i].z * size;
+    data_format[i]     = d[j].x * size;
+    data_format[i + 1] = d[j].y * size;
+    data_format[i + 2] = d[j].z * size;
 
   }
 
@@ -339,9 +342,33 @@ PhysicsRenderer.prototype.resetData = function(s, d){
 
   texture.needsUpdate = true;
 
-  this.reset( texture);
+  // this.reset( texture);
+
+  var data_destination = new Float32Array( this.s2 * 4 );
+
+  for (var i = 0, j =0; j < data_format.length / 4 ; i+=4, j++ ) {
+
+    data_destination[i]   = data_format[i];
+    data_destination[i+1] = data_format[i+1];
+    data_destination[i+2] = 1 * size;
+
+  }
+
+  var texture_destination = new THREE.DataTexture(
+    data_destination,
+    this.size,
+    this.size,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
+  texture_destination.minFilter =  THREE.NearestFilter,
+  texture_destination.magFilter = THREE.NearestFilter,
+  texture_destination.needsUpdate = true;
+
+  this.reset( texture, texture_destination );
 
 }
+
 
 // PhysicsRenderer.prototype.passTexture = function(  t1 , t2 ){
 //
