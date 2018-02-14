@@ -1,3 +1,5 @@
+// data generator
+
 const fs = require('fs');
 const d3 = require('d3');
 const _ = require('underscore');
@@ -12,14 +14,14 @@ function Utils() {
 function generator(){
   var data = [];
   var util = new Utils();
-  for (var i = 0; i < 100000; i++) {
+  for (var i = 0; i < 1048576; i++) {
     data[i] = {
-      'x': util.scale( Math.random()*50000 ),
-      'y': util.scale( Math.random()*40000 ),
-      'z': util.scale( Math.random()*40000 ),
+      'x': util.scale( Math.abs(Math.cos(i*.6)) *50000 ),
+      'y': util.scale( Math.random() *50000 ),
+      'z': util.scale( Math.abs(Math.sin(i*.1)) *50000 +Math.random() *7000 ),
     }
-  }
 
+  }
  return data;
 }
 

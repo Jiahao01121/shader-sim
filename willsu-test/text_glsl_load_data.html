@@ -26,7 +26,7 @@
    * limitation: 8192 or 4096
    *
   ************************************************************/
-  var SIZE = 2000;
+  var SIZE = 1024; //also length of data array(data of refugee).
   var simulation;
 
   var simulationUniforms = {
@@ -82,7 +82,8 @@
       simulation = new PhysicsRenderer( SIZE , shaders.ss.sim , renderer );
       // simulation.setUniforms( simulationUniforms );
       simulation.addBoundTexture( renderUniforms.t_pos , 'output' );
-      simulation.resetRand( 200 );
+      // simulation.resetRand( 200 );
+      simulation.resetData(50, data)
       /************************************************************
        @ geo, mat => particles
        * geometry that matches pixel "index",

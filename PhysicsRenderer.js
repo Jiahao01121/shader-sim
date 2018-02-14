@@ -294,9 +294,40 @@ PhysicsRenderer.prototype.resetRand = function( size , alpha ){
     }
 
   }
-console.log(data);
+
+// console.log(data);
   var texture = new THREE.DataTexture(
     data,
+    this.size,
+    this.size,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
+
+  texture.minFilter =  THREE.NearestFilter,
+  texture.magFilter = THREE.NearestFilter,
+
+  texture.needsUpdate = true;
+
+  this.reset( texture);
+
+}
+// resets the render targets to the from position(base on data)
+PhysicsRenderer.prototype.resetData = function(s, d){
+
+  var size = s;
+  var data_format = new Float32Array( this.s2 * 4 );
+
+  for (var i = 0; i < data_format.length / 4 ; i+=4 ) {
+
+    data_format[i]     = d[i].x * size;
+    data_format[i + 1] = d[i].y * size;
+    data_format[i + 2] = d[i].z * size;
+
+  }
+
+  var texture = new THREE.DataTexture(
+    data_format,
     this.size,
     this.size,
     THREE.RGBAFormat,
