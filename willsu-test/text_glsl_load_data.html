@@ -62,8 +62,13 @@
       scene = new THREE.Scene();
       //aspect ratio
       var ar = window.innerWidth / window.innerHeight;
-      camera = new THREE.PerspectiveCamera( 75, ar , 1, 100000 );
-      camera.position.z = 100;
+      camera = new THREE.PerspectiveCamera( 75, ar , 1, 100000000 );
+      camera.position.z = 5;
+      camera.position.x = 10;
+      camera.position.y = 100;
+      // camera.position.z = 57.661923777742224;
+      // camera.position.y = -17.265295669662333;
+      // camera.position.x = -79.8561964514272;
       renderer = new THREE.WebGLRenderer();
       renderer.setSize( window.innerWidth, window.innerHeight );
       document.body.appendChild( renderer.domElement );
@@ -105,7 +110,7 @@
     requestAnimationFrame( animate );
 
     simulation.update();
-    // simulation.addDebugScene(scene)
+    simulation.addDebugScene(scene)
 
     controls.update();
     renderer.render( scene , camera );

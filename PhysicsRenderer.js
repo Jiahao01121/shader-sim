@@ -24,6 +24,7 @@ function PhysicsRenderer( size , shader , renderer ){
   this.rt_2 = this.rt_1.clone();
   this.rt_3 = this.rt_1.clone();
   this.rt_4 = this.rt_1.clone();
+  this.rt_5 = this.rt_1.clone();
 
   this.counter = 0;
 
@@ -112,9 +113,15 @@ PhysicsRenderer.prototype.createDebugScene= function(){
   debugScene.add( debugMesh );
 
   var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
-    map: this.rt_4
+    map: this.rt_5
   }));
   debugMesh.position.set( 215, 0 , 0 );
+  debugScene.add( debugMesh );
+
+  var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
+    map: this.rt_4
+  }));
+  debugMesh.position.set( 335, 0 , 0 );
   debugScene.add( debugMesh );
 
   return debugScene;
@@ -165,9 +172,11 @@ PhysicsRenderer.prototype.createTexturePassProgram = function(){
 PhysicsRenderer.prototype.createSimulationProgram = function(sim){
 
   this.simulationUniforms = {
-    t_oPos:{      type:"t"  , value:null },
-    t_pos:{       type:"t"  , value:null },
-    resolution: { type:"v2" , value: this.resolution }
+    t_oPos:        { type:"t"  , value:null },
+    t_pos:         { type:"t"  , value:null },
+    resolution:    { type:"v2" , value: this.resolution },
+    t_destination: { type:"t"  , value:null },
+    t_origin:      { type:"t"  , value:null },
   }
 
 
@@ -188,6 +197,10 @@ PhysicsRenderer.prototype.createSimulationProgram = function(sim){
 
 
 PhysicsRenderer.prototype.update = function(){
+
+  this.simulation.uniforms.t_destination.value = this.rt_4;
+
+  this.simulation.uniforms.t_origin.value = this.rt_5;
 
   var flipFlop = this.counter % 3;
 
@@ -278,9 +291,16 @@ PhysicsRenderer.prototype.reset = function( texture , destiny_texture){
   this.pass( this.texturePassProgram , this.rt_2 );
   this.pass( this.texturePassProgram , this.rt_3 );
 
-  this.texturePassProgram.uniforms.texture.value = destiny_texture;
+  this.pass( this.texturePassProgram , this.rt_5 );
+
+  this.reset_destination(destiny_texture);
+
+}
+PhysicsRenderer.prototype.reset_destination = function(d_t){
+  this.texturePassProgram.uniforms.texture.value = d_t;
   this.pass( this.texturePassProgram , this.rt_4 );
 }
+
 // resets the render targets to the from position(random)
 PhysicsRenderer.prototype.resetRand = function( size , alpha ){
   //size here are the size of the boundary, not texture size.
@@ -348,9 +368,10 @@ PhysicsRenderer.prototype.resetData = function(s, d){
 
   for (var i = 0, j =0; j < data_format.length / 4 ; i+=4, j++ ) {
 
-    data_destination[i]   = data_format[i];
-    data_destination[i+1] = data_format[i+1];
-    data_destination[i+2] = 1 * size;
+    data_destination[i]   = size *Math.random()
+
+    data_destination[i+1] = 0 * size;
+    data_destination[i+2] = 0*Math.random() * size;
 
   }
 

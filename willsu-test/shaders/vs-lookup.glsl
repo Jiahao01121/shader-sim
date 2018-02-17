@@ -6,8 +6,8 @@ void main(){
 
   vec3 dif = cameraPosition - pos.xyz;
 
-  gl_PointSize = min( 1. ,  0.1 / length( dif ));
-  // gl_PointSize = 0.4;
+  // gl_PointSize = min( 9. ,  0.9 / length( dif ));
+  gl_PointSize = 1.;
   gl_Position = projectionMatrix * modelViewMatrix * vec4( pos.xyz , 1. );
 
 
